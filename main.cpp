@@ -17,3 +17,16 @@ int main() {
     std::cout << "Hello, World!" << std::endl;
     return 0;
 }
+void    hogehoge(int fftsize,int length,int step,double*p){
+	double*t;
+	FFT fft(fftsize);
+	fft.alloc(t);
+	for(int i=0;i<=length/step;i++){
+		fft.copy(t,p+FFT::min(step*i,length-fftsize));
+		fft.rdft(t);
+
+		fft.irdft(t);
+	}
+	fft.copy(t,p);
+
+}
