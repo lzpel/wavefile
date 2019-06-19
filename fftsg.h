@@ -21,7 +21,6 @@ void dfst(int, double *, double *, int *, double *);
 
 class FFT {
 public:
-	static const double PI=M_PI;
 	double *buf, *w;
 	signed size;
 	signed *ip;

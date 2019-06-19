@@ -66,6 +66,7 @@ signed waveread(const char *fn,long*audio_length,double**audio_buffer) {
 			fseek(f,chunk_size,SEEK_CUR);
 		}
 	}
+	return 0;
 }
 
 #undef  WAVEFILE_LOAD

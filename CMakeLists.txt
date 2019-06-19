@@ -2,5 +2,5 @@ cmake_minimum_required(VERSION 3.13)
 project(test)
 
 set(CMAKE_CXX_STANDARD 14)
-
-add_executable(test main.cpp wavefile.h fftsg.h fftsg.cpp)
+file(GLOB sourcefiles "*.h" "*.cpp")
+add_executable(out ${sourcefiles})
