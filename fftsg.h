@@ -73,6 +73,16 @@ public:
 			w[i*2+1]=t*psin;
 		}
 	}
+
+	static void firlpf(double*p,const double*a,int t,int order){
+		double*fir=new double[order+1];
+		for(int i=0;i<=order;i++){
+			fir[i]=((i-order/2)==0)?(1.0/t):sin((M_PI/t)*(i-order/2))/(M_PI*(i-order/2));
+			printf("%f\n",fir[i]);
+		}
+		for()
+		delete[]fir;
+	}
 };
 
 #endif //TEST_WAVE_H
