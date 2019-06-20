@@ -6,6 +6,7 @@
 #define TEST_FFTSG_H
 
 #include <math.h>
+#include <cstring>
 
 void cdft(int, int, double *, int *, double *);
 
@@ -61,27 +62,54 @@ public:
 	}
 
 	void copy(double *into, const double *from) {
-		for (int i = 0; i < size; ++i)into[i] = from[i];
+		copy(into,from,size);
 	}
 
-	void spectrum_phaseshift(double*w,double p){
-		double psin=sin(p),pcos=cos(p);
+	static void copy(double *into, const double *from,int len) {
+		for (int i = 0; i < len; ++i)into[i] = from[i];
+	}
+	void print(const char*fn,const double*p,bool row){
+		print(fn,p,row,size);
+	}
+	static void print(const char*fn,const double*p,bool row,int len){
+		const char*fmt=row?"%f\n":"%f ";
+		if(fn){
+			FILE*f=fopen(fn,"w");
+			for(int i=0;i<len;i++)fprintf(f,fmt,p[i]);
+			fclose(f);
+		}else{
+			for(int i=0;i<len;i++)printf(fmt,p[i]);
+		}
+	}
+	void spectrum_cos(double*w){
 		w[0]=w[1]=0;
 		for(int i=1;i<size/2;++i){
-			double t=sqrt(w[i*2]*w[i*2]+w[i*2+1]*w[i*2+1]);
-			w[i*2]=t*pcos;
-			w[i*2+1]=t*psin;
+			w[i*2]=sqrt(w[i*2]*w[i*2]+w[i*2+1]*w[i*2+1]);
+			w[i*2+1]=0;
 		}
 	}
-
-	static void firlpf(double*p,const double*a,int t,int order){
-		double*fir=new double[order+1];
-		for(int i=0;i<=order;i++){
-			fir[i]=((i-order/2)==0)?(1.0/t):sin((M_PI/t)*(i-order/2))/(M_PI*(i-order/2));
-			printf("%f\n",fir[i]);
+	static inline double sinc(int i,int len){
+		return (i==0)?(1.0/len):sin((M_PI/len)*i)/(M_PI*i);
+	}
+	void fir(double*p,int lenmin,int lenmax){
+		fir(p,lenmin,lenmax,size);
+	}
+	static void fir(double*p,const int lenmin,const int lenmax,const int order){
+		//本当はi<=orderにして対称性が欲しいがフィルタ次数を奇数にしたくない。
+		if(lenmin){
+			for(int i=0;i<order;i++){
+				p[i]=sinc(i-order/2,lenmin);
+			}
+		}else{
+			for(int i=0;i<order;i++){
+				p[i]=(i==order/2)?1:0;
+			}
 		}
-		for()
-		delete[]fir;
+		if(lenmax){
+			for(int i=0;i<order;i++){
+				p[i]-=sinc(i-order/2,lenmax);
+			}
+		}
 	}
 };
 
