@@ -89,7 +89,7 @@ public:
 		}
 	}
 	static inline double sinc(int i,int len){
-		return (i==0)?(1.0/len):sin((M_PI/len)*i)/(M_PI*i);
+		return (i==0)?(2.0/len):sin(i*M_PI*2.0/len)/(i*M_PI);
 	}
 	void fir(double*p,int lenmin,int lenmax){
 		fir(p,lenmin,lenmax,size);
