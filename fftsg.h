@@ -50,6 +50,7 @@ public:
 
 	void irdft(double *a) {
 		::rdft(size, -1, a, ip, w);
+		//sum_0^s f_t^2 =(sum_0^s/2 F_a^2)/(s/2)
 		for (int j = 0; j < size; j++) a[j] *= 2.0 / size;
 	}
 
@@ -121,31 +122,23 @@ public:
 	static void fir(double *p, const int lenmin, const int lenmax, const int order) {
 		//本当はi<=orderにして対称性が欲しいがフィルタ次数を奇数にしたくない。
 		if (lenmin) {
-			for (int i = 0; i < order; i++) {
-				p[i] = sinc(i - order / 2, lenmin);
-			}
+			for (int i = 0; i < order; ++i)p[i] = sinc(i - order / 2, lenmin);
 		} else {
-			for (int i = 0; i < order; i++) {
-				p[i] = (i == order / 2) ? 1 : 0;
-			}
+			for (int i = 0; i < order; ++i)p[i] = (i == order / 2) ? 1 : 0;
 		}
 		if (lenmax) {
-			for (int i = 0; i < order; i++) {
-				p[i] -= sinc(i - order / 2, lenmax);
-			}
+			for (int i = 0; i < order; i++)p[i] -= sinc(i - order / 2, lenmax);
 		}
 	}
 
 	static signed zerocrosslen(int lenmax, double *p) {
-		int count = 0, pos[3]={0};
-		for (int i = 0; i < lenmax; ++i)if ((p[i] * p[i + 1] < 0) && (count < 3))pos[count++]=i;
-		return pos[2]?pos[2]-pos[0]:0;
+		int count = 0, pos[3] = {0};
+		for (int i = 0; i < lenmax; ++i)if ((p[i] * p[i + 1] < 0) && (count < 3))pos[count++] = i;
+		return pos[2] ? pos[2] - pos[0] : 0;
 	}
 
 	static void zerocrosslenarray(int lenmax, double *pd, double *ps, int pn) {
-		for (int i = 0; i < pn - lenmax; i++) {
-			pd[i] = zerocrosslen(lenmax, ps + i);
-		}
+		for (int i = 0; i < pn - lenmax; i++)pd[i] = zerocrosslen(lenmax, ps + i);
 	}
 };
 
