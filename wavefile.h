@@ -16,7 +16,7 @@ bool waveriff(const char *riff, char *p) {
 	return true;
 }
 
-signed waveload(const char *fn, signed *audio_length, double **audio_buffer) {
+signed waveload(const char *fn, signed *audio_length, signed* audio_rate, double **audio_buffer) {
 	FILE *f;
 	char name[4];
 	long temp;
@@ -50,6 +50,7 @@ signed waveload(const char *fn, signed *audio_length, double **audio_buffer) {
 			fread(&format_byterate, 4, 1, f);
 			fread(&format_blockalign, 2, 1, f);
 			fread(&format_bitssample, 2, 1, f);
+			*audio_rate = format_samplerate;
 		} else if (waveriff("data", chunk_name)) {
 			*audio_buffer = new double[*audio_length = chunk_size / format_blockalign];
 			if (format_bitssample == 8)WAVEFILE_LOAD(f, char, format_chnum, *audio_length, *audio_buffer);
@@ -63,7 +64,7 @@ signed waveload(const char *fn, signed *audio_length, double **audio_buffer) {
 	return 0;
 }
 
-signed wavesave(const char *fn, signed audio_length, double *audio_buffer) {
+signed wavesave(const char *fn, signed audio_length, signed audio_rate, double *audio_buffer) {
 	FILE *f;
 	char name[4];
 	long temp;
@@ -76,7 +77,7 @@ signed wavesave(const char *fn, signed audio_length, double *audio_buffer) {
 	fwrite(&temp, 4, 1, f);
 	fwrite("WAVE", 4, 1, f);
 	short format_num = 1, format_chnum = 1, format_blockalign, format_bitssample=16;
-	long format_samplerate = 44100, format_byterate;
+	long format_samplerate = audio_rate, format_byterate;
 	temp = 16;
 	format_blockalign=format_chnum*format_bitssample/8;
 	format_byterate=format_samplerate*format_blockalign;
