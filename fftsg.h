@@ -88,7 +88,19 @@ public:
 			w[i*2+1]=0;
 		}
 	}
+	void conv(double*d,double*s,const int sn,const double*f){
+		conv(d,s,sn,f,size);
+	}
+	static void conv(double*d,double*s,const int sn,const double*f,const int fn){
+		//d==sでもいい
+		for(int i=0;i<sn-fn;++i){
+			double sum=0;
+			for(int j=0;j<fn;++j)sum+=s[i+j]*f[j];
+			d[i]=sum;
+		}
+	}
 	static inline double sinc(int i,int len){
+		//i%(len/2)==0の時return0;
 		return (i==0)?(2.0/len):sin(i*M_PI*2.0/len)/(i*M_PI);
 	}
 	void fir(double*p,int lenmin,int lenmax){
@@ -109,6 +121,21 @@ public:
 			for(int i=0;i<order;i++){
 				p[i]-=sinc(i-order/2,lenmax);
 			}
+		}
+	}
+	static signed zerocrosslen(int lenmax,double*p){
+		int count=0,pos[3];
+		for(int i=0;i<lenmax;++i){
+			if((p[i]*p[i+1]<0)&&(count<3)){
+				pos[count]=i;
+				count++;
+			}
+		}
+		return pos[2]-pos[0];
+	}
+	static void zerocrosslenarray(int lenmax,double*pd,double*ps,int pn){
+		for(int i=0;i<pn-lenmax;i++){
+			pd[i]=zerocrosslen(lenmax,ps+i);
 		}
 	}
 };
