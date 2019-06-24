@@ -70,6 +70,23 @@ public:
 		for (int i = 0; i < len; ++i)into[i] = from[i];
 	}
 
+	static void interpolate(double *into, int intolen, const double *from, int fromlen) {
+		if (intolen > fromlen) {
+			for (int i = 0; i < intolen; ++i) {
+				double pos = 1.0 * fromlen * i / intolen;
+				into[i] = from[int(pos)] * ((int) pos + 1 - pos) + from[int(pos) + 1] * (pos - (int) pos);
+			}
+		} else {
+			for (int i = 0; i < intolen; ++i) {
+				into[i] = from[fromlen * i / intolen];
+			}
+		}
+	}
+
+	void window(double *p) {
+		for (int i = 0; i < size; ++i)p[i] *= 1 - cos(2 * M_PI * i / size);
+	}
+
 	void print(const char *fn, const double *p, bool row) {
 		print(fn, p, row, size);
 	}
@@ -90,6 +107,15 @@ public:
 		for (int i = 1; i < size / 2; ++i) {
 			w[i * 2] = sqrt(w[i * 2] * w[i * 2] + w[i * 2 + 1] * w[i * 2 + 1]);
 			w[i * 2 + 1] = 0;
+		}
+	}
+
+	void spectrum_log(double *w) {
+		w[0] = w[1]=0;
+		for (int i = 1; i < size / 2; ++i) w[i] = w[i * 2] * w[i * 2] + w[i * 2 + 1] * w[i * 2 + 1];
+		for (int i = 0; i < size / 2; ++i) {
+			w[i + size / 2] = 0;
+			w[i] = w[i]?log(w[i])/2:0;
 		}
 	}
 
@@ -119,26 +145,31 @@ public:
 		fir(p, lenmin, lenmax, size);
 	}
 
-	static void fir(double *p, const int lenmin, const int lenmax, const int order) {
+	static void fir(double *p, const int lenmax, const int lenmin, const int order) {
 		//本当はi<=orderにして対称性が欲しいがフィルタ次数を奇数にしたくない。
-		if (lenmin) {
-			for (int i = 0; i < order; ++i)p[i] = sinc(i - order / 2, lenmin);
+		if (lenmax) {
+			for (int i = 0; i < order; ++i)p[i] = sinc(i - order / 2, lenmax);
 		} else {
 			for (int i = 0; i < order; ++i)p[i] = (i == order / 2) ? 1 : 0;
 		}
-		if (lenmax) {
-			for (int i = 0; i < order; i++)p[i] -= sinc(i - order / 2, lenmax);
+		if (lenmin) {
+			for (int i = 0; i < order; i++)p[i] -= sinc(i - order / 2, lenmin);
 		}
 	}
 
-	static signed zerocrosslen(int lenmax, double *p) {
-		int count = 0, pos[3] = {0};
-		for (int i = 0; i < lenmax; ++i)if ((p[i] * p[i + 1] < 0) && (count < 3))pos[count++] = i;
-		return pos[2] ? pos[2] - pos[0] : 0;
+	static signed zerocrosslen(int lenmin, int lenmax, double *p) {
+		for (int i = 0; i < lenmax / 2; ++i) {
+			if (p[i] * p[i + 1] < 0) {
+				for (int j = i + lenmin; j < i + lenmax; j++) {
+					if ((p[j] * p[j + 1] < 0) && (p[i] * p[j] > 0))return j - i;
+				}
+			}
+		}
+		return 0;
 	}
 
-	static void zerocrosslenarray(int lenmax, double *pd, double *ps, int pn) {
-		for (int i = 0; i < pn - lenmax; i++)pd[i] = zerocrosslen(lenmax, ps + i);
+	static void zerocrosslenarray(int lenmin, int lenmax, double *pd, double *ps, int pn) {
+		for (int i = 0; i < pn - lenmax * 1.5; i++)pd[i] = zerocrosslen(lenmin, lenmax, ps + i);
 	}
 };
 

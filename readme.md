@@ -6,6 +6,10 @@
 - 基本周期x2で窓してFFTして半周期で平滑化
 - 戻せることを確認
 - 0.05sフレーム毎に音声とスペクトルの対応を機械学習
+# 方針
+- F0自己申告
+- 0.01s 3T0窓 STFT
+-
 # Credits
 http://www.kurims.kyoto-u.ac.jp/~ooura/fft.html
 Takuya OOURA, 1996-2001, General Purpose FFT (Fast Fourier/Cosine/Sine Transform) Package
