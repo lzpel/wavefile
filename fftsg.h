@@ -6,7 +6,15 @@
 #define TEST_FFTSG_H
 
 #include <math.h>
+#include <float.h>
 #include <cstring>
+
+#ifndef MIN
+#define MIN(a, b) (a)>(b)?(b):(a)
+#endif
+#ifndef MAX
+#define MAX(a, b) (a)>(b)?(a):(b)
+#endif
 
 void cdft(int, int, double *, int *, double *);
 
@@ -40,10 +48,6 @@ public:
 		delete[] w;
 	}
 
-	static int min(const int a, const int b) {
-		return a > b ? a : b;
-	}
-
 	void rdft(double *a) {
 		::rdft(size, 1, a, ip, w);
 	}
@@ -55,10 +59,14 @@ public:
 	}
 
 	void alloc(double *&p) {
-		p = new double[size];
+		alloc(p, size);
 	}
 
-	void free(double *p) {
+	static void alloc(double *&p, int s) {
+		p = new double[s];
+	}
+
+	static void free(double *p) {
 		delete[] p;
 	}
 
@@ -104,18 +112,36 @@ public:
 
 	void spectrum_cos(double *w) {
 		w[0] = w[1] = 0;
-		for (int i = 1; i < size / 2; ++i) {
-			w[i * 2] = sqrt(w[i * 2] * w[i * 2] + w[i * 2 + 1] * w[i * 2 + 1]);
-			w[i * 2 + 1] = 0;
+		for (int i = 1; i < size / 2; ++i) w[i] = w[i * 2] * w[i * 2] + w[i * 2 + 1] * w[i * 2 + 1];
+		for (int i = 0; i < size / 2; ++i) {
+			w[i + size / 2] = 0;
+			w[i] = w[i] ? sqrt(w[i]) : 0;
 		}
 	}
 
 	void spectrum_log(double *w) {
-		w[0] = w[1]=0;
+		w[0] = w[1] = 0;
 		for (int i = 1; i < size / 2; ++i) w[i] = w[i * 2] * w[i * 2] + w[i * 2 + 1] * w[i * 2 + 1];
 		for (int i = 0; i < size / 2; ++i) {
 			w[i + size / 2] = 0;
-			w[i] = w[i]?log(w[i])/2:0;
+			w[i] = w[i] ? log(w[i]) / 2 : 0;
+		}
+	}
+
+	void spectrum_aperiodicity(double *w, int n) {
+		w[0] = w[size / 2] = 0;
+		for (int i = 1; i < size / 2 / n; i++) {
+			const int npos = i * n - (n - 1) / 2;
+			double min = DBL_MAX, max = DBL_MIN;
+			for (int j = npos; j < npos + n; j++) {
+				min = MIN(min, w[j]);
+				max = MAX(max, w[j]);
+			}
+			w[i] = max;
+			w[i + size / 2] = min;
+		}
+		for (int i = size / 2 / n; i < size / 2; i++) {
+			w[i] = w[i + size / 2] = 0;
 		}
 	}
 
