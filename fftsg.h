@@ -63,11 +63,26 @@ public:
 	}
 
 	static void alloc(double *&p, int s) {
-		p = new double[s];
+		zero(p = new double[s],s);
 	}
 
 	static void free(double *p) {
 		delete[] p;
+	}
+
+	double power(double *d, bool spectrum) {
+		return power(d, spectrum, size);
+	}
+
+	static double power(double *d, bool spectrum, int len) {
+		double s=0,a=0;
+		if(spectrum){
+			for (int i = 1; i < len; ++i)s+=d[i]*d[i]/len*2;
+		}else{
+			for (int i = 0; i < len; ++i)a+=d[i]/len;
+			for (int i = 0; i < len; ++i)s+=(d[i]-a)*(d[i]-a);
+		}
+		return s;
 	}
 
 	void copy(double *into, const double *from) {
@@ -142,6 +157,26 @@ public:
 		}
 		for (int i = size / 2 / n; i < size / 2; i++) {
 			w[i] = w[i + size / 2] = 0;
+		}
+	}
+
+	void zero(double *t) {
+		zero(t, size);
+	}
+
+	static void zero(double *t, int s) {
+		for (int i = 0; i < s; i++)t[i] = 0;
+	}
+
+	void white(double *d) {
+		white(d, size);
+	}
+
+	static void white(double *d, int n) {
+		for (int i = 0; i < n / 2; i++) {
+			double r1 = (double) rand() / RAND_MAX, r2 = (double) rand() / RAND_MAX;
+			d[i * 2 + 0] = sqrt(-2 * log(r1)) * cos(2 * M_PI * r2);
+			d[i * 2 + 1] = sqrt(-2 * log(r1)) * sin(2 * M_PI * r2);
 		}
 	}
 

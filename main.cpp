@@ -32,7 +32,20 @@ void test1(int f0){
 	fft.free(t);
 	fft.free(p2);
 }
+void test2(){
+	FFT fft(1024);
+	double *t,power=0;
+	fft.alloc(t);
+	fft.white(t);
+	printf("%f\n",fft.power(t,0));
+	fft.rdft(t);
+	printf("%f\n",fft.power(t,1));
+	fft.spectrum_cos(t);
+	printf("%f\n",fft.power(t,1));
+	fft.free(t);
+}
 int main() {
-	test1(306);
+	//test1(306);
+	test2();
 	return 0;
 }
