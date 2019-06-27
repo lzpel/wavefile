@@ -144,16 +144,21 @@ public:
 	}
 
 	void spectrum_log_periodseparate(double*periodicity,double*aperiodicity,double *spectrum, int n) {
-		//雑にf0振幅の補正
+		//雑に0hz振幅の補正
 		spectrum[0]=spectrum[1];
-		double*average=periodicity,*variance=aperiodicity,*amplitude=aperiodicity;
-		for(int i=0;i<size;i++)average[i]=variance[i]=0;
-		for(int i=n;i<size/2;i++){
-			for(int j=i-(n-1)/2;j<n;j++)average[i]+=spectrum[j]/n;
-			for(int j=i-(n-1)/2;j<n;j++)variance[i]+=(spectrum[j]-average[i])*(spectrum[j]-average[i])/n;
-			amplitude[i]=sqrt(variance[i]*2);
-			periodicity[i]=average[i]+amplitude[i];
-			aperiodicity[i]=average[i]-amplitude[i];
+		//対数振幅スペクトルで正弦波という仮定で周期性・非周期性の対数振幅スペクトルに分離
+		for(int i=0;i<size/2;i++){
+			double average=0,variance=0,amplitude=0;
+			for(int j=i;j<i+n;j++)average+=spectrum[j]/n;
+			for(int j=i;j<i+n;j++)variance+=(spectrum[j]-average)*(spectrum[j]-average)/n;
+			amplitude=sqrt(variance*2);
+			periodicity[i+(n-1)/2]=average+amplitude;
+			aperiodicity[i+(n-1)/2]=average-amplitude;
+		}
+		//雑に0hz振幅の補正
+		for(int i=0;i<(n-1)/2;i++){
+			periodicity[i]=periodicity[(n-1)/2];
+			aperiodicity[i]=aperiodicity[(n-1)/2];
 		}
 		spectrum[0]=0;
 	}
