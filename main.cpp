@@ -6,7 +6,7 @@ void test1(int f0){
 	static const int n=3;
 	double *p, *p2;
 	signed l, r;
-	waveload("../test.wav", &l, &r, &p);
+	waveload("../renzoku.wav", &l, &r, &p);
 	FFT fft(1024);
 	fft.print("out10.csv", p, l);
 	fft.alloc(p2,l);
